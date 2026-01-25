@@ -2,6 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Exemplu retinere valori:
+ *
+ *         14(zi) - 6 (id)
+ *           |
+ * W001 -> 12(zi) - 7 (id) - 8 (id)
+ *   |
+ * W002 -> 13(zi) - 10 (id)
+ *
+ */
+
 typedef struct IDParticipant {
     struct IDParticipant *next;
     int id;
@@ -24,7 +35,8 @@ void eliberare_zi(ZiWorkShop *z);
 void eliberare_id(IDParticipant *i);
 
 /*
- Avem nevoie de gaseste_zi si exista_id pentru a verifica ca valoarea acestora nu e deja adaugata
+ Avem nevoie de gaseste_zi (returneaza *z) si exista_id(1 daca exista, 0 daca nu)
+ pentru a verifica ca valoarea acestora nu e deja adaugata
  */
 
 
@@ -47,10 +59,10 @@ int exista_id(IDParticipant *idp, int id) {
 
 
 void adauga_id(ZiWorkShop *zi, int id) {
-    if (!exista_id(zi->ID, id)) {
+    if (!exista_id(zi->ID, id)) { //adaugam id-ul doar daca acesta nu exista inca
         IDParticipant *p = zi->ID;
         while (p->next != NULL)
-            p = p->next;
+            p = p->next; //mergem la capatul listei cu resp cu id-uri, unde vom aloca memorie si crea noul id
 
         p->next = malloc(sizeof(IDParticipant));
         p->next->id = id;
@@ -61,15 +73,15 @@ void adauga_id(ZiWorkShop *zi, int id) {
 int sterge_id(IDParticipant **head, int id) {
     IDParticipant *p = *head, *ant = NULL;
 
-    while (p && p->id != id) {
+    while (p && p->id != id) { //cautam pana dam de id-ul cerut, salvam pe parcurs si anteriorul
         ant = p;
         p = p->next;
     }
-    if (!p) return 0;
+    if (!p) return 0; //daca nu gasit id ul, nu stergem nimic
 
-    if (!ant)
+    if (!ant) //daca avem doar un element
         *head = p->next;
-    else
+    else //altfel
         ant->next = p->next;
 
     free(p);
@@ -79,37 +91,38 @@ int sterge_id(IDParticipant **head, int id) {
 int sterge_zi(ZiWorkShop **head, int zi, int id) {
     ZiWorkShop *p = *head, *ant = NULL;
 
-    while (p != NULL && p->zi != zi) {
+    while (p != NULL && p->zi != zi) { //cautam zi
         ant = p;
         p = p->next;
     }
-    if (!p) return 0;
+    if (!p) return 0; //daca nu exista ziua, nu facem nimic
 
     if (!sterge_id(&p->ID, id)) //daca id ul nu exista, nu stergem nimic
         return 0;
 
-    if (p->ID == NULL) { //daca ID ul corespunde fix primului element
-        if (!ant)
+    if (p->ID == NULL) { //daca deja am sters id-ul
+        if (!ant) //daca avem doar un elem
             *head = p->next;
-        else
+        else //altfel
             ant->next = p->next;
 
         free(p);
     }
     return 1;
 }
+
 void stergere(CodWorkshop **head, char *cod, int zi, int id) {
     CodWorkshop *p = *head, *ant = NULL;
 
-    while (p && strcmp(p->cod, cod) != 0) {
+    while (p && strcmp(p->cod, cod) != 0) { //cautam pana gasim codul
         ant = p;
         p = p->next;
     }
-    if (!p) return;
+    if (!p) return; //daca codul nu exista, nu facem nimic
 
-    sterge_zi(&p->z, zi, id);
+    sterge_zi(&p->z, zi, id); //stergem ziua
 
-    if (p->z == NULL) {
+    if (p->z == NULL) { //daca am sters ziua
         if (!ant)
             *head = p->next;
         else
