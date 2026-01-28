@@ -65,7 +65,7 @@ materie * exista_materie(materie *mat, char *den);
 void adauga_nota(note *not, double valoare) {
     note *aux = not;
     while (aux->next != NULL) {
-        aux = not->next;
+        aux = aux->next;
     }
     aux->next = malloc(sizeof(note));
     aux->next->val = valoare;
